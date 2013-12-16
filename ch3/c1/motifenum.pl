@@ -20,7 +20,8 @@ for(my $iter=0;$iter<scalar @dna;$iter++) {
 	my $string=$dna[$iter];
 	for(my $i=0;$i<length($string)-$k;$i++) {
 		my $x=substr $string,$i,$k;
-		push($kmers_input{$x},$iter);
+		my $arrref=$kmers_input{$x};
+		push(@{$arrref},$iter);
 	}
 }
 
@@ -49,10 +50,10 @@ sub motif_enum {
 	foreach my $kmer (keys %{$kmers_ref}) {
 		my $mut_ref=gen_mut($kmer,$d);
 		foreach my $kmut (@{$mut_ref}) {
-			foreach $origkmer (keys %{$kmer_ref}) {
+			foreach my $origkmer (keys %{$kmers_ref}) {
 				if(distance($kmut,$origkmer)<=$d) {
 					my %listgather;
-					my @dnalist_t=(${$kmer_ref}){$origkmer};
+					my @dnalist=${$kmers_ref}{$origkmer};
 					foreach my $dnaitem (@dnalist) {
 						$listgather{$dnaitem}++;
 					}
