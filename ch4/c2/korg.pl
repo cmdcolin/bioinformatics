@@ -8,7 +8,6 @@ my %graph;
 
 while(my $line=<>) {
 	chomp($line);
-	print "hi\n";
 	if($line ne '') {
 		push(@kmers,$line);
 	}
@@ -25,5 +24,8 @@ for my $kmer (@kmers) {
 }
 
 
-print Dumper \%graph;
-
+for my $elt (sort(keys %graph)) {
+	for my $sub (keys %{$graph{$elt}}) {
+		print $elt." -> ". $sub."\n";
+	}
+}
