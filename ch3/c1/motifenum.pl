@@ -4,6 +4,9 @@ use warnings;
 use Data::Dumper;
 use Text::Levenshtein qw(distance);
 
+#config
+my $verbose=0;
+
 #load input files
 my $header=<>;
 my ($k,$d)=split(' ',$header);
@@ -19,7 +22,7 @@ my $iter=0;
 for(my $iter=0;$iter<scalar @dna;$iter++) {
 	my $string=$dna[$iter];
 	my $array=[];
-	for(my $i=0;$i<length($string)-$k;$i++) {
+	for(my $i=0;$i<length($string)-($k-1);$i++) {
 		my $x=substr $string,$i,$k;
 		if(!exists($kmers_input{$x})) {
 			my $newarr=[];
@@ -52,8 +55,15 @@ for my $i (1..$k-1)
 	@words = @newwords;
 }
 
+my %answers;
+
 print "Processing k:$k, d:$d\n",Dumper \%kmers_input if $verbose;
 motif_enum(\%kmers_input);
+
+foreach my $key (keys %answers) {
+	print $key." ";
+}
+print "\n";
 
 
 
@@ -65,25 +75,28 @@ sub motif_enum {
 		print "Processing $kmer in motif_enum l1\n" if $verbose;
 		foreach my $kmut (@{$mut_ref}) {
 			print "Processing $kmut in motif_enum l2\n" if $verbose;
+			my %listgather;
+			undef %listgather;
 			foreach my $origkmer (keys %{$kmers_ref}) {
 				print "Processing $origkmer in motif_enum l3\n" if $verbose;
 				if(distance($kmut,$origkmer)<=$d) {
-					print "Found distance less than $d $kmut $origkmer l4\n";
-					my %listgather;
+					print "Found distance less than $d $kmut $origkmer l4\n" if $verbose;
+				
 					my $dnalist=${$kmers_ref}{$origkmer};
 					foreach my $dnaitem (@{$dnalist}) {
-						print "Found $origkmer in ".$dna[$dnaitem]."\n";
+						print "Found orig:$origkmer mut:$kmut in ".$dna[$dnaitem]."\n" if $verbose;
 						$listgather{$dnaitem}++;
 					}
 					my $d1=scalar keys %listgather;
 					my $d2=scalar @dna;
-					print "Testing sizes d1 $d1 d2 $d2\n";
+					print "Testing sizes d1 $d1 d2 $d2\n" if $verbose;
 					if($d1==$d2) {
-						print "FOUND: $kmut\n";
+						print "FOUND ANSWER: $kmut\n";
+						$answers{$kmut}++;
 					
 					}
-					if($d1>1) {
-						print "Closer\n";
+					if($d1>2) {
+						print "Closer d1:$d1\n" if $verbose;
 					}
 				}
 			}
