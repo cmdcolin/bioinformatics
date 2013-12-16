@@ -5,7 +5,7 @@ use Data::Dumper;
 use Text::Levenshtein qw(distance);
 
 #config
-my $verbose=0;
+my $verbose=5;
 
 #load input files
 my $header=<>;
@@ -26,7 +26,7 @@ for(my $iter=0;$iter<scalar @dna;$iter++) {
 		my $x=substr $string,$i,$k;
 		if(!exists($kmers_input{$x})) {
 			my $newarr=[];
-			push(@$newarr,$iter);
+			push(@{$newarr},$iter);
 			$kmers_input{$x}=$newarr;
 		}
 		else {
@@ -72,34 +72,26 @@ sub motif_enum {
 	my $kmers_ref=shift;
 	foreach my $kmer (keys %{$kmers_ref}) {
 		my $mut_ref=gen_mut($kmer,$d);
-		print "Processing $kmer in motif_enum l1\n" if $verbose;
+		print "Processing $kmer in motif_enum l1\n" if $verbose>=1;
 		foreach my $kmut (@{$mut_ref}) {
-			print "Processing $kmut in motif_enum l2\n" if $verbose;
-			my %listgather;
-			undef %listgather;
-			foreach my $origkmer (keys %{$kmers_ref}) {
-				print "Processing $origkmer in motif_enum l3\n" if $verbose;
-				if(distance($kmut,$origkmer)<=$d) {
-					print "Found distance less than $d $kmut $origkmer l4\n" if $verbose;
-				
-					my $dnalist=${$kmers_ref}{$origkmer};
-					foreach my $dnaitem (@{$dnalist}) {
-						print "Found orig:$origkmer mut:$kmut in ".$dna[$dnaitem]."\n" if $verbose;
-						$listgather{$dnaitem}++;
-					}
-					my $d1=scalar keys %listgather;
-					my $d2=scalar @dna;
-					print "Testing sizes d1 $d1 d2 $d2\n" if $verbose;
-					if($d1==$d2) {
-						print "FOUND ANSWER: $kmut\n";
-						$answers{$kmut}++;
-					
-					}
-					if($d1>2) {
-						print "Closer d1:$d1\n" if $verbose;
+			print "Processing kmer:$kmer mut:$kmut in motif_enum l2\n" if $verbose>=1;
+			my $setsize=0;
+			foreach my $dnastring (@dna) {
+				for(my $i=0;$i<length($dnastring)-($k-1);$i++) {
+					my $x=substr $dnastring,$i,$k;
+					if(distance($kmut,$x)<=$d) {
+						$setsize++;
+						last;
 					}
 				}
 			}
+			print "Testing sizes d1:$setsize d2:".scalar @dna." l4\n" if $verbose>=2;
+			if($setsize==scalar @dna) {
+				print "FOUND ANSWER: $kmut l5\n" if $verbose>=3;
+				$answers{$kmut}++;
+			
+			}
+
 		}
 	}	
 }
