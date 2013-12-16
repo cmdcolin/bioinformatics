@@ -2,13 +2,14 @@ use strict;
 use warnings;
 #libs
 use Data::Dumper;
-use Text::Levenshtein qw(distance);
+use Text::LevenshteinXS qw(distance);
 
 #config
-my $verbose=5;
+my $verbose=0;
 
 #load input files
 my $header=<>;
+chomp($header);
 my ($k,$d)=split(' ',$header);
 my @dna;
 while(my $line=<>) {
@@ -23,16 +24,9 @@ for(my $iter=0;$iter<scalar @dna;$iter++) {
 	my $string=$dna[$iter];
 	my $array=[];
 	for(my $i=0;$i<length($string)-($k-1);$i++) {
+	
 		my $x=substr $string,$i,$k;
-		if(!exists($kmers_input{$x})) {
-			my $newarr=[];
-			push(@{$newarr},$iter);
-			$kmers_input{$x}=$newarr;
-		}
-		else {
-			my $arrref=$kmers_input{$x};
-			push(@{$arrref},$iter);
-		}
+		$kmers_input{$x}++;
 	}
 }
 
@@ -79,7 +73,9 @@ sub motif_enum {
 			foreach my $dnastring (@dna) {
 				for(my $i=0;$i<length($dnastring)-($k-1);$i++) {
 					my $x=substr $dnastring,$i,$k;
-					if(distance($kmut,$x)<=$d) {
+					my $distance=distance($kmut,$x);
+					print "Processing kmut:$kmut x:$x $distance=?$d\n" if $verbose>=2;
+					if($distance<=$d) {
 						$setsize++;
 						last;
 					}
@@ -102,7 +98,8 @@ sub gen_mut {
 	my ($kmer, $d)=@_;
 	my @ret;
 	for my $key (@words) {
-		if(distance($key,$kmer)<=$d) {
+		my $distance=distance($key,$kmer);
+		if($distance=$d) {
 			push(@ret,$key);
 		}
 	}
