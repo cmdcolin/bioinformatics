@@ -17,7 +17,7 @@ sub greedy_sort {
 		my $k=@{$ref_p}[$i];
 		if(abs($k)!=$i) {
 		}		
-		print "$i\t$r\n";
+		print "$i\t$k\n";
 	}
 	return 0;
 }
